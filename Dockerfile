@@ -1,31 +1,20 @@
 FROM golang:1.12.7-alpine@sha256:87e527712342efdb8ec5ddf2d57e87de7bd4d2fedf9f6f3547ee5768bb3c43ff AS binarybuilder
 # Install build deps
-RUN apk --no-cache --no-progress add --virtual build-deps build-base git linux-pam-dev
+RUN apk --no-cache --no-progress add --virtual build-deps build-base git
 WORKDIR /go/src/github.com/gogs/gogs
 COPY . .
-RUN make build TAGS="sqlite cert pam"
+RUN make build TAGS=""
 
 FROM alpine:3.10@sha256:6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
 # Install system utils & Gogs runtime dependencies
-ADD https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64 /usr/sbin/gosu
-RUN chmod +x /usr/sbin/gosu \
-  && echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories \
-  && apk --no-cache --no-progress add \
+RUN apk --no-cache --no-progress add \
     bash \
     ca-certificates \
     curl \
     git \
-    linux-pam \
-    openssh \
-    s6 \
-    shadow \
-    socat \
     tzdata
 
 ENV GOGS_CUSTOM /data/gogs
-
-# Configure LibC Name Service
-COPY docker/nsswitch.conf /etc/nsswitch.conf
 
 WORKDIR /app/gogs
 COPY docker ./docker
@@ -35,8 +24,8 @@ COPY --from=binarybuilder /go/src/github.com/gogs/gogs/gogs .
 
 RUN ./docker/finalize.sh
 
-# Configure Docker Container
-VOLUME ["/data"]
-EXPOSE 22 3000
-ENTRYPOINT ["/app/gogs/docker/start.sh"]
-CMD ["/bin/s6-svscan", "/app/gogs/docker/s6/"]
+RUN mkdir /data && chown git /data
+USER git:git
+
+EXPOSE 3000
+ENTRYPOINT ["/app/gogs/gogs","web"]
