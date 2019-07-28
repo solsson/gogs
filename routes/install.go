@@ -248,7 +248,7 @@ func InstallPost(c *context.Context, f form.Install) {
 	}
 
 	currentUser, match := setting.IsRunUserMatchCurrentUser(f.RunUser)
-	if !match {
+	if !match && currentUser != "" {
 		c.FormErr("RunUser")
 		c.RenderWithErr(c.Tr("install.run_user_not_match", f.RunUser, currentUser), INSTALL, &f)
 		return
