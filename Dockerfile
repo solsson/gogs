@@ -24,7 +24,8 @@ COPY --from=binarybuilder /go/src/github.com/gogs/gogs/gogs .
 
 RUN ./docker/finalize.sh
 
-RUN mkdir /data && chown git /data
+RUN mkdir /data /data/gogs /data/gogs/conf /data/logs \
+  && chown -R git /data
 USER git:git
 
 EXPOSE 3000
