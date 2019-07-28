@@ -3,7 +3,7 @@ FROM golang:1.12.7-alpine@sha256:87e527712342efdb8ec5ddf2d57e87de7bd4d2fedf9f6f3
 RUN apk --no-cache --no-progress add --virtual build-deps build-base git
 WORKDIR /go/src/github.com/gogs/gogs
 COPY . .
-RUN make build TAGS=""
+RUN make build TAGS="sqlite"
 
 FROM alpine:3.10@sha256:6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
 # Install system utils & Gogs runtime dependencies
